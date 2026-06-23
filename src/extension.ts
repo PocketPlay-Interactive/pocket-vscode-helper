@@ -40,6 +40,7 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand('pocketHelper.moveOmniCache', () => runWithProgress('Moving cache/runtime files', moveCacheRuntimeFiles)),
     vscode.commands.registerCommand('pocketHelper.pullLatest', () => runWithProgress('Pulling latest code', pullLatest)),
     vscode.commands.registerCommand('pocketHelper.push', () => runWithProgress('Pushing current branch', pushCurrentBranch)),
+    vscode.commands.registerCommand('pocketHelper.commitAndPull', () => runWithProgress('Committing and pulling latest code', commitAndPull)),
     vscode.commands.registerCommand('pocketHelper.commitAndPush', () => runWithProgress('Committing and pushing changes', commitAndPush)),
     vscode.commands.registerCommand('pocketHelper.toggleOutput', toggleOutput)
   );
@@ -63,6 +64,7 @@ async function runWorkflow() {
       [
         { label: 'Pull latest code from remote', action: pullLatest },
         { label: 'Push current branch', action: pushCurrentBranch },
+        { label: 'Commit current changes and pull latest code', action: commitAndPull },
         { label: 'Commit current changes and push', action: commitAndPush },
         { label: 'Skip Git action', action: undefined }
       ],
@@ -75,9 +77,9 @@ async function runWorkflow() {
   });
 }
 
-async function runWithProgress(title: string, task: () => Promise<void>) {
+async function runWithProgress(title: string, task: () => Promise<void | false>) {
   try {
-    await vscode.window.withProgress(
+    const result = await vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,
         title,
@@ -85,6 +87,10 @@ async function runWithProgress(title: string, task: () => Promise<void>) {
       },
       task
     );
+    if (result === false) {
+      return;
+    }
+
     vscode.window.showInformationMessage(`${title}: done.`);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
@@ -220,6 +226,73 @@ async function commitAndPush() {
   await logGitStatus(repoDir);
 }
 
+async function commitAndPull() {
+  const repoDir = getRepositoryPath();
+  await ensureGitAvailable(repoDir);
+
+  const pullSource = await getPullSource(repoDir);
+  const shouldPull = await commitCurrentChanges(repoDir);
+  if (!shouldPull) {
+    return false;
+  }
+
+  output.appendLine('');
+  output.appendLine(`Pulling latest code from ${pullSource} with merge conflicts preserved...`);
+  const pull = await tryRunGit(repoDir, ['pull', '--no-rebase']);
+  if (pull.ok) {
+    await logGitStatus(repoDir);
+    return;
+  }
+
+  const conflictedFiles = await getConflictedFiles(repoDir);
+  if (!conflictedFiles.length) {
+    throw pull.error;
+  }
+
+  output.appendLine('');
+  output.appendLine('[CONFLICT] Pull stopped with merge conflicts. Conflict markers were left in the files.');
+  output.appendLine(`[CONFLICT] Merge source: ${pullSource}`);
+  output.appendLine('[CONFLICT] Files that need merge:');
+  for (const file of conflictedFiles) {
+    output.appendLine(`- ${file}`);
+  }
+
+  output.show(true);
+  vscode.window.showWarningMessage(
+    `Commit & Pull found ${conflictedFiles.length} conflict(s) from ${pullSource}. Open Pocket Helper Output for the file list.`
+  );
+  await logGitStatus(repoDir);
+  return false;
+}
+
+async function commitCurrentChanges(repoDir: string) {
+  const commitMessage = await vscode.window.showInputBox({
+    title: 'Commit message',
+    prompt: 'Enter a commit message',
+    value: 'update project'
+  });
+
+  if (commitMessage === undefined) {
+    output.appendLine('[INFO] Commit cancelled.');
+    return false;
+  }
+
+  const message = commitMessage.trim() || 'update project';
+
+  output.appendLine('');
+  output.appendLine('Staging changes...');
+  await runGit(repoDir, ['add', '-A']);
+
+  const hasStagedChanges = await hasCachedDiff(repoDir);
+  if (!hasStagedChanges) {
+    output.appendLine('[INFO] Nothing staged to commit. Pulling latest code anyway.');
+    return true;
+  }
+
+  await runGit(repoDir, ['commit', '-m', message]);
+  return true;
+}
+
 async function hasCachedDiff(repoDir: string) {
   try {
     await execFile('git', ['diff', '--cached', '--quiet'], repoDir);
@@ -249,6 +322,37 @@ async function runGit(repoDir: string, args: string[]) {
   const result = await execFile('git', args, repoDir);
   appendProcessOutput(result);
   return result;
+}
+
+async function tryRunGit(repoDir: string, args: string[]) {
+  const command = `git ${args.join(' ')}`;
+  output.appendLine(`> ${command}`);
+
+  try {
+    const result = await execFile('git', args, repoDir);
+    appendProcessOutput(result);
+    return { ok: true as const, result };
+  } catch (error) {
+    return { ok: false as const, error };
+  }
+}
+
+async function getPullSource(repoDir: string) {
+  try {
+    const upstream = await execFile('git', ['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}'], repoDir);
+    const source = upstream.stdout.trim();
+    return source || 'configured upstream';
+  } catch {
+    return 'configured upstream';
+  }
+}
+
+async function getConflictedFiles(repoDir: string) {
+  const result = await runGit(repoDir, ['diff', '--name-only', '--diff-filter=U']);
+  return result.stdout
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
 }
 
 function execFile(command: string, args: string[], cwd: string) {
@@ -367,8 +471,9 @@ function createStatusBar(context: vscode.ExtensionContext) {
     makeStatusItem('$(archive) Move Cache', 'pocketHelper.moveOmniCache', 99),
     makeStatusItem('$(cloud-download) Pull', 'pocketHelper.pullLatest', 98),
     makeStatusItem('$(cloud-upload) Push', 'pocketHelper.push', 97),
-    makeStatusItem('$(repo-push) Commit & Push', 'pocketHelper.commitAndPush', 96),
-    makeOutputStatusItem(95)
+    makeStatusItem('$(repo-pull) Commit & Pull', 'pocketHelper.commitAndPull', 96),
+    makeStatusItem('$(repo-push) Commit & Push', 'pocketHelper.commitAndPush', 95),
+    makeOutputStatusItem(94)
   ];
 
   for (const item of statusItems) {

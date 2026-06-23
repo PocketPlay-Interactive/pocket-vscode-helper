@@ -6,6 +6,7 @@ Extension này hỗ trợ:
 
 - Dọn cache và file runtime ra thư mục backup.
 - Chạy nhanh `git pull`, `git push`.
+- Commit toàn bộ thay đổi hiện tại rồi pull kiểu merge, giữ nguyên conflict để xử lý sau.
 - Commit toàn bộ thay đổi hiện tại rồi pull rebase và push.
 - Hiển thị log thao tác trong Output Channel `Pocket Helper`.
 
@@ -26,6 +27,7 @@ Khi mở project này hoặc project `omni-reup-video`, thanh Status Bar bên tr
 - `Move Cache`: chỉ dọn cache/runtime vào thư mục backup.
 - `Pull`: chạy `git pull --ff-only --autostash`.
 - `Push`: chạy `git push`.
+- `Commit & Pull`: hỏi commit message, chạy `git add -A`, commit, rồi `git pull --no-rebase`. Nếu có conflict, extension giữ nguyên merge conflict trong file và báo danh sách file cần merge.
 - `Commit & Push`: hỏi commit message, chạy `git add -A`, commit, `git pull --rebase --autostash`, rồi `git push`.
 - `Output`: bật/tắt màn hình log `Pocket Helper`.
 
@@ -35,7 +37,7 @@ Bạn cũng có thể bấm `Ctrl+Shift+P`, gõ `Omni` để chạy các lệnh 
 
 - Status Bar bên trái: nơi đặt các nút thao tác nhanh.
 - Explorer title bar: có nút `Move Cache + Git...`.
-- Source Control title bar: có nút `Pull`, `Push` và `Commit & Push`.
+- Source Control title bar: có nút `Commit & Pull`, `Pull`, `Push` và `Commit & Push`.
 - Output Channel: extension không tự mở Output khi chạy lệnh; bấm `Output` nếu muốn xem log.
 
 ## File được dọn khi chạy Move Cache
@@ -92,6 +94,17 @@ Bạn có thể ẩn hoặc hiện các nút trên Status Bar bằng setting:
 
 Đổi thành `false` nếu chỉ muốn dùng lệnh qua Command Palette hoặc menu của VS Code.
 
+## Xử lý conflict khi Commit & Pull
+
+Nút `Commit & Pull` dùng `git pull --no-rebase`, nên nếu remote có thay đổi đụng với code local, Git sẽ để lại conflict marker trong file như bình thường.
+
+Khi gặp conflict, extension sẽ:
+
+- Không abort merge.
+- Mở Output Channel `Pocket Helper`.
+- Báo source đang pull, ví dụ `origin/main`.
+- Liệt kê các file đang conflict để bạn đưa cho AI merger xử lý tiếp.
+
 ## Chạy khi đang phát triển extension
 
 Cài dependency và compile:
@@ -120,5 +133,6 @@ npm run install:local
 ## Ghi chú
 
 - Các lệnh Git chạy trên workspace đang mở. Nếu đang focus vào file thuộc workspace nào, extension sẽ ưu tiên workspace đó.
+- `Commit & Pull` sẽ pull tiếp nếu không có gì để commit. Nếu bạn bấm Cancel ở ô commit message, extension sẽ dừng và không pull.
 - `Commit & Push` sẽ dùng commit message bạn nhập. Nếu bỏ trống, message mặc định là `update project`.
 - Nếu không có thay đổi nào được stage, extension sẽ không tạo commit mới.

@@ -16,6 +16,7 @@
     "onCommand:pocketHelper.moveOmniCache",
     "onCommand:pocketHelper.pullLatest",
     "onCommand:pocketHelper.push",
+    "onCommand:pocketHelper.commitAndPull",
     "onCommand:pocketHelper.commitAndPush",
     "onCommand:pocketHelper.toggleOutput"
   ],
@@ -55,6 +56,12 @@
         "icon": "$(cloud-upload)"
       },
       {
+        "command": "pocketHelper.commitAndPull",
+        "title": "Commit Current Changes and Pull",
+        "category": "Omni",
+        "icon": "$(repo-pull)"
+      },
+      {
         "command": "pocketHelper.commitAndPush",
         "title": "Commit Current Changes and Push",
         "category": "Omni",
@@ -92,6 +99,9 @@
           "command": "pocketHelper.push"
         },
         {
+          "command": "pocketHelper.commitAndPull"
+        },
+        {
           "command": "pocketHelper.commitAndPush"
         },
         {
@@ -105,6 +115,10 @@
         }
       ],
       "scm/title": [
+        {
+          "command": "pocketHelper.commitAndPull",
+          "group": "navigation"
+        },
         {
           "command": "pocketHelper.commitAndPush",
           "group": "navigation"
