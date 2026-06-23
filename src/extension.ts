@@ -37,6 +37,7 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand('pocketHelper.runOmniWorkflow', runWorkflow),
     vscode.commands.registerCommand('pocketHelper.moveOmniCache', () => runWithProgress('Moving cache/runtime files', moveCacheRuntimeFiles)),
     vscode.commands.registerCommand('pocketHelper.pullLatest', () => runWithProgress('Pulling latest code', pullLatest)),
+    vscode.commands.registerCommand('pocketHelper.push', () => runWithProgress('Pushing current branch', pushCurrentBranch)),
     vscode.commands.registerCommand('pocketHelper.commitAndPush', () => runWithProgress('Committing and pushing changes', commitAndPush))
   );
 
@@ -58,6 +59,7 @@ async function runWorkflow() {
     const action = await vscode.window.showQuickPick(
       [
         { label: 'Pull latest code from remote', action: pullLatest },
+        { label: 'Push current branch', action: pushCurrentBranch },
         { label: 'Commit current changes and push', action: commitAndPush },
         { label: 'Skip Git action', action: undefined }
       ],
@@ -156,6 +158,15 @@ async function pullLatest() {
   output.appendLine('Pulling latest code with autostash...');
   await ensureGitAvailable(repoDir);
   await runGit(repoDir, ['pull', '--ff-only', '--autostash']);
+  await logGitStatus(repoDir);
+}
+
+async function pushCurrentBranch() {
+  const repoDir = getRepositoryPath();
+  output.appendLine('');
+  output.appendLine('Pushing current branch...');
+  await ensureGitAvailable(repoDir);
+  await runGit(repoDir, ['push']);
   await logGitStatus(repoDir);
 }
 
@@ -341,7 +352,8 @@ function createStatusBar(context: vscode.ExtensionContext) {
     makeStatusItem('$(tools) Omni Helper', 'pocketHelper.runOmniWorkflow', 100),
     makeStatusItem('$(archive) Move Cache', 'pocketHelper.moveOmniCache', 99),
     makeStatusItem('$(cloud-download) Pull', 'pocketHelper.pullLatest', 98),
-    makeStatusItem('$(cloud-upload) Commit & Push', 'pocketHelper.commitAndPush', 97)
+    makeStatusItem('$(cloud-upload) Push', 'pocketHelper.push', 97),
+    makeStatusItem('$(repo-push) Commit & Push', 'pocketHelper.commitAndPush', 96)
   ];
 
   for (const item of statusItems) {

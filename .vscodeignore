@@ -2,6 +2,10 @@ src/**
 tsconfig.json
 node_modules/**
 out/**
+logs/**
+outputs/**
+temp/**
+uploads/**
 .vscode/**
 .git/**
 *.vsix

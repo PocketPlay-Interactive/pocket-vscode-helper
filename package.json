@@ -15,6 +15,7 @@
     "onCommand:pocketHelper.runOmniWorkflow",
     "onCommand:pocketHelper.moveOmniCache",
     "onCommand:pocketHelper.pullLatest",
+    "onCommand:pocketHelper.push",
     "onCommand:pocketHelper.commitAndPush"
   ],
   "main": "./dist/extension.js",
@@ -47,10 +48,16 @@
         "icon": "$(cloud-download)"
       },
       {
+        "command": "pocketHelper.push",
+        "title": "Push Current Branch",
+        "category": "Omni",
+        "icon": "$(cloud-upload)"
+      },
+      {
         "command": "pocketHelper.commitAndPush",
         "title": "Commit Current Changes and Push",
         "category": "Omni",
-        "icon": "$(cloud-upload)"
+        "icon": "$(repo-push)"
       }
     ],
     "configuration": {
@@ -75,6 +82,9 @@
           "command": "pocketHelper.pullLatest"
         },
         {
+          "command": "pocketHelper.push"
+        },
+        {
           "command": "pocketHelper.commitAndPush"
         }
       ],
@@ -87,6 +97,10 @@
       "scm/title": [
         {
           "command": "pocketHelper.commitAndPush",
+          "group": "navigation"
+        },
+        {
+          "command": "pocketHelper.push",
           "group": "navigation"
         },
         {
