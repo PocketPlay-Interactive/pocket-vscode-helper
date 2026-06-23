@@ -1,0 +1,105 @@
+{
+  "name": "pocket-vscode-helper",
+  "displayName": "Pocket VS Code Helper",
+  "description": "VS Code buttons for moving Omni Reup Video cache/runtime files and running common Git actions.",
+  "version": "0.0.1",
+  "publisher": "pocket",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished",
+    "onCommand:pocketHelper.runOmniWorkflow",
+    "onCommand:pocketHelper.moveOmniCache",
+    "onCommand:pocketHelper.pullLatest",
+    "onCommand:pocketHelper.commitAndPush"
+  ],
+  "main": "./dist/extension.js",
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "npm run compile",
+    "vsix": "vsce package --allow-missing-repository",
+    "install:local": "npm run vsix && code --install-extension pocket-vscode-helper-0.0.1.vsix --force"
+  },
+  "contributes": {
+    "commands": [
+      {
+        "command": "pocketHelper.runOmniWorkflow",
+        "title": "Move Cache + Git...",
+        "category": "Omni",
+        "icon": "$(tools)"
+      },
+      {
+        "command": "pocketHelper.moveOmniCache",
+        "title": "Move Cache/Runtime Files",
+        "category": "Omni",
+        "icon": "$(archive)"
+      },
+      {
+        "command": "pocketHelper.pullLatest",
+        "title": "Pull Latest Code",
+        "category": "Omni",
+        "icon": "$(cloud-download)"
+      },
+      {
+        "command": "pocketHelper.commitAndPush",
+        "title": "Commit Current Changes and Push",
+        "category": "Omni",
+        "icon": "$(cloud-upload)"
+      }
+    ],
+    "configuration": {
+      "title": "Pocket VS Code Helper",
+      "properties": {
+        "pocketHelper.showStatusBarButtons": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show Omni helper buttons in the VS Code status bar."
+        }
+      }
+    },
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "pocketHelper.runOmniWorkflow"
+        },
+        {
+          "command": "pocketHelper.moveOmniCache"
+        },
+        {
+          "command": "pocketHelper.pullLatest"
+        },
+        {
+          "command": "pocketHelper.commitAndPush"
+        }
+      ],
+      "explorer/title": [
+        {
+          "command": "pocketHelper.runOmniWorkflow",
+          "group": "navigation"
+        }
+      ],
+      "scm/title": [
+        {
+          "command": "pocketHelper.commitAndPush",
+          "group": "navigation"
+        },
+        {
+          "command": "pocketHelper.pullLatest",
+          "group": "navigation"
+        }
+      ]
+    }
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@types/vscode": "^1.90.0",
+    "@vscode/vsce": "^3.9.2",
+    "typescript": "^5.4.5"
+  }
+}
