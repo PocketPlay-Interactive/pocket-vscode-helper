@@ -1,4 +1,4 @@
-# Pocket VS Code Helper
+# Pocket VSCode Helper
 
 Extension VS Code giúp biến các thao tác hay dùng của project **Omni Reup Video** thành nút bấm nhanh ngay trong VS Code.
 
