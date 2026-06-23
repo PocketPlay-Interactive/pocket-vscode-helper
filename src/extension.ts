@@ -253,7 +253,7 @@ async function runGit(repoDir: string, args: string[]) {
 
 function execFile(command: string, args: string[], cwd: string) {
   return new Promise<GitResult>((resolve, reject) => {
-    cp.execFile(command, args, { cwd, windowsHide: true }, (error, stdout, stderr) => {
+    cp.execFile(command, args, { cwd, windowsHide: true }, (error: cp.ExecFileException | null, stdout: string, stderr: string) => {
       if (error) {
         appendProcessOutput({ stdout, stderr });
         reject(error);
