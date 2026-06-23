@@ -1,51 +1,124 @@
 # Pocket VS Code Helper
 
-Extension VS Code de bien file `.bat` cu cua Omni Reup Video thanh nut bam trong VS Code.
+Extension VS Code giúp biến các thao tác hay dùng của project **Omni Reup Video** thành nút bấm nhanh ngay trong VS Code.
 
-## Cai vao VS Code de dung truc tiep
+Extension này hỗ trợ:
 
-Chay trong folder nay:
+- Dọn cache và file runtime ra thư mục backup.
+- Chạy nhanh `git pull`, `git push`.
+- Commit toàn bộ thay đổi hiện tại rồi pull rebase và push.
+- Hiển thị log thao tác trong Output Channel `Pocket Helper`.
+
+## Cài đặt để dùng trực tiếp
+
+Chạy các lệnh sau trong thư mục extension này:
 
 ```powershell
 npm install
 npm run install:local
 ```
 
-Sau do reload VS Code hoac dong/mo lai VS Code.
+Sau khi cài xong, reload VS Code hoặc đóng/mở lại VS Code.
 
-Tu luc nay, khi mo project nay hoac project `omni-reup-video`, thanh Status Bar ben trai se co cac nut:
+Khi mở project này hoặc project `omni-reup-video`, thanh Status Bar bên trái sẽ có các nút:
 
-- `Omni Helper`: don cache/runtime files, roi hoi Pull, Commit & Push, hoac Skip.
-- `Move Cache`: chi don cache/runtime files vao `../omni-reup-video-cache-backups/<timestamp>`.
-- `Pull`: chay `git pull --ff-only --autostash`.
-- `Push`: chay `git push`.
-- `Commit & Push`: hoi commit message, roi chay `git add -A`, commit, `git pull --rebase --autostash`, va `git push`.
-- `Output`: bat/tat man hinh log `Pocket Helper`.
+- `Omni Helper`: dọn cache/runtime, sau đó hỏi bạn muốn `Pull`, `Push`, `Commit & Push` hay bỏ qua thao tác Git.
+- `Move Cache`: chỉ dọn cache/runtime vào thư mục backup.
+- `Pull`: chạy `git pull --ff-only --autostash`.
+- `Push`: chạy `git push`.
+- `Commit & Push`: hỏi commit message, chạy `git add -A`, commit, `git pull --rebase --autostash`, rồi `git push`.
+- `Output`: bật/tắt màn hình log `Pocket Helper`.
 
-Ban cung co the bam `Ctrl+Shift+P`, go `Omni` de chay lenh.
+Bạn cũng có thể bấm `Ctrl+Shift+P`, gõ `Omni` để chạy các lệnh từ Command Palette.
 
-## Vi tri nut
+## Vị trí nút
 
-- Status Bar ben trai: day la cho tien nhat de bam nhanh.
-- Explorer title bar: co nut `Move Cache + Git`.
-- Source Control title bar: co nut `Pull`, `Push`, va `Commit & Push`.
-- Extension khong tu mo man hinh Output khi chay lenh; bam `Output` neu muon xem log.
+- Status Bar bên trái: nơi đặt các nút thao tác nhanh.
+- Explorer title bar: có nút `Move Cache + Git...`.
+- Source Control title bar: có nút `Pull`, `Push` và `Commit & Push`.
+- Output Channel: extension không tự mở Output khi chạy lệnh; bấm `Output` nếu muốn xem log.
 
-## Chay thu khi dang dev
+## File được dọn khi chạy Move Cache
 
-Neu muon debug extension:
+Extension sẽ tìm trong workspace hiện tại và move các mục sau nếu tồn tại:
+
+```text
+jobs.db
+jobs.db-shm
+jobs.db-wal
+uploads
+outputs
+temp
+logs
+__pycache__
+```
+
+Ngoài ra, extension cũng move các file ở thư mục gốc có đuôi:
+
+```text
+.mp4
+.srt
+.pyc
+.pyo
+```
+
+Sau khi move, extension sẽ tạo lại các thư mục `uploads`, `outputs`, `temp`, `logs` kèm file `.gitkeep`.
+
+## Thư mục backup
+
+Các file cache/runtime được đưa vào thư mục backup nằm cạnh repo:
+
+```text
+../omni-reup-video-cache-backups/<yyyyMMdd-HHmmss>
+```
+
+Ví dụ:
+
+```text
+../omni-reup-video-cache-backups/20260623-153045
+```
+
+Extension có kiểm tra an toàn để tránh move file ra ngoài workspace đang mở và tránh ghi backup ra ngoài thư mục cha dự kiến.
+
+## Cấu hình
+
+Bạn có thể ẩn hoặc hiện các nút trên Status Bar bằng setting:
+
+```json
+{
+  "pocketHelper.showStatusBarButtons": true
+}
+```
+
+Đổi thành `false` nếu chỉ muốn dùng lệnh qua Command Palette hoặc menu của VS Code.
+
+## Chạy khi đang phát triển extension
+
+Cài dependency và compile:
 
 ```powershell
 npm install
 npm run compile
 ```
 
-Roi bam `F5` trong VS Code.
+Sau đó bấm `F5` trong VS Code để mở Extension Development Host.
 
-## An toan
+## Đóng gói lại file VSIX
 
-Buoc don cache chi move cac path nam trong workspace dang mo va backup vao folder cha:
+Muốn build lại file `.vsix`:
 
-```text
-../omni-reup-video-cache-backups/<yyyyMMdd-HHmmss>
+```powershell
+npm run vsix
 ```
+
+Muốn build và cài lại extension vào VS Code local:
+
+```powershell
+npm run install:local
+```
+
+## Ghi chú
+
+- Các lệnh Git chạy trên workspace đang mở. Nếu đang focus vào file thuộc workspace nào, extension sẽ ưu tiên workspace đó.
+- `Commit & Push` sẽ dùng commit message bạn nhập. Nếu bỏ trống, message mặc định là `update project`.
+- Nếu không có thay đổi nào được stage, extension sẽ không tạo commit mới.
