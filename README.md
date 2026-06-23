@@ -20,6 +20,7 @@ Tu luc nay, khi mo project nay hoac project `omni-reup-video`, thanh Status Bar 
 - `Pull`: chay `git pull --ff-only --autostash`.
 - `Push`: chay `git push`.
 - `Commit & Push`: hoi commit message, roi chay `git add -A`, commit, `git pull --rebase --autostash`, va `git push`.
+- `Output`: bat/tat man hinh log `Pocket Helper`.
 
 Ban cung co the bam `Ctrl+Shift+P`, go `Omni` de chay lenh.
 
@@ -28,6 +29,7 @@ Ban cung co the bam `Ctrl+Shift+P`, go `Omni` de chay lenh.
 - Status Bar ben trai: day la cho tien nhat de bam nhanh.
 - Explorer title bar: co nut `Move Cache + Git`.
 - Source Control title bar: co nut `Pull`, `Push`, va `Commit & Push`.
+- Extension khong tu mo man hinh Output khi chay lenh; bam `Output` neu muon xem log.
 
 ## Chay thu khi dang dev
 

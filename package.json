@@ -16,7 +16,8 @@
     "onCommand:pocketHelper.moveOmniCache",
     "onCommand:pocketHelper.pullLatest",
     "onCommand:pocketHelper.push",
-    "onCommand:pocketHelper.commitAndPush"
+    "onCommand:pocketHelper.commitAndPush",
+    "onCommand:pocketHelper.toggleOutput"
   ],
   "main": "./dist/extension.js",
   "scripts": {
@@ -58,6 +59,12 @@
         "title": "Commit Current Changes and Push",
         "category": "Omni",
         "icon": "$(repo-push)"
+      },
+      {
+        "command": "pocketHelper.toggleOutput",
+        "title": "Toggle Pocket Helper Output",
+        "category": "Omni",
+        "icon": "$(output)"
       }
     ],
     "configuration": {
@@ -86,6 +93,9 @@
         },
         {
           "command": "pocketHelper.commitAndPush"
+        },
+        {
+          "command": "pocketHelper.toggleOutput"
         }
       ],
       "explorer/title": [

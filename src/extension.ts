@@ -28,6 +28,8 @@ const rootFilePatterns = [
 
 let output: vscode.OutputChannel;
 let statusItems: vscode.StatusBarItem[] = [];
+let outputVisible = false;
+let outputStatusItem: vscode.StatusBarItem | undefined;
 
 export function activate(context: vscode.ExtensionContext) {
   output = vscode.window.createOutputChannel('Pocket Helper');
@@ -38,7 +40,8 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand('pocketHelper.moveOmniCache', () => runWithProgress('Moving cache/runtime files', moveCacheRuntimeFiles)),
     vscode.commands.registerCommand('pocketHelper.pullLatest', () => runWithProgress('Pulling latest code', pullLatest)),
     vscode.commands.registerCommand('pocketHelper.push', () => runWithProgress('Pushing current branch', pushCurrentBranch)),
-    vscode.commands.registerCommand('pocketHelper.commitAndPush', () => runWithProgress('Committing and pushing changes', commitAndPush))
+    vscode.commands.registerCommand('pocketHelper.commitAndPush', () => runWithProgress('Committing and pushing changes', commitAndPush)),
+    vscode.commands.registerCommand('pocketHelper.toggleOutput', toggleOutput)
   );
 
   createStatusBar(context);
@@ -73,7 +76,6 @@ async function runWorkflow() {
 }
 
 async function runWithProgress(title: string, task: () => Promise<void>) {
-  output.show(true);
   try {
     await vscode.window.withProgress(
       {
@@ -89,6 +91,18 @@ async function runWithProgress(title: string, task: () => Promise<void>) {
     output.appendLine(`[ERROR] ${message}`);
     vscode.window.showErrorMessage(`${title} failed: ${message}`);
   }
+}
+
+function toggleOutput() {
+  if (outputVisible) {
+    output.hide();
+    outputVisible = false;
+  } else {
+    output.show(true);
+    outputVisible = true;
+  }
+
+  updateOutputStatusItem();
 }
 
 async function moveCacheRuntimeFiles() {
@@ -353,7 +367,8 @@ function createStatusBar(context: vscode.ExtensionContext) {
     makeStatusItem('$(archive) Move Cache', 'pocketHelper.moveOmniCache', 99),
     makeStatusItem('$(cloud-download) Pull', 'pocketHelper.pullLatest', 98),
     makeStatusItem('$(cloud-upload) Push', 'pocketHelper.push', 97),
-    makeStatusItem('$(repo-push) Commit & Push', 'pocketHelper.commitAndPush', 96)
+    makeStatusItem('$(repo-push) Commit & Push', 'pocketHelper.commitAndPush', 96),
+    makeOutputStatusItem(95)
   ];
 
   for (const item of statusItems) {
@@ -370,9 +385,26 @@ function makeStatusItem(text: string, command: string, priority: number) {
   return item;
 }
 
+function makeOutputStatusItem(priority: number) {
+  outputStatusItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, priority);
+  outputStatusItem.command = 'pocketHelper.toggleOutput';
+  updateOutputStatusItem();
+  return outputStatusItem;
+}
+
+function updateOutputStatusItem() {
+  if (!outputStatusItem) {
+    return;
+  }
+
+  outputStatusItem.text = outputVisible ? '$(output) Hide Output' : '$(output) Output';
+  outputStatusItem.tooltip = outputVisible ? 'Hide Pocket Helper output' : 'Show Pocket Helper output';
+}
+
 function disposeStatusItems() {
   for (const item of statusItems) {
     item.dispose();
   }
   statusItems = [];
+  outputStatusItem = undefined;
 }
