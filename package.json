@@ -27,7 +27,7 @@
     "watch": "tsc -watch -p ./",
     "package": "npm run compile",
     "vsix": "vsce package --allow-missing-repository",
-    "install:local": "npm run vsix && code --install-extension pocket-vscode-helper-0.0.1.vsix --force"
+    "install:local": "npm run vsix && node scripts/install-local.js"
   },
   "contributes": {
     "commands": [
